@@ -1,4 +1,23 @@
 
+/*
+ * SpatialHash.h
+ *
+ * Defines the interface for a traditional fixed-grid spatial hashing algorithm.
+ *
+ * Initial implementation generated with assistance from OpenAI ChatGPT.
+ * The implementation was subsequently modified, reviewed, documented, and tested by the authors.
+ *
+ * Algorithmic concepts are based on traditional spatial hashing
+ * techniques, including mapping spatial coordinates to grid cells
+ * and using hash tables for efficient spatial lookup.
+ *
+ * References:
+ * Teschner et al. (2003). Optimized Spatial Hashing for Collision
+ * Detection of Deformable Objects.
+ *
+ * Ericson, C. (2004). Real-Time Collision Detection.
+ */
+
 #pragma once
 
 #include "SpatialPoint.h"

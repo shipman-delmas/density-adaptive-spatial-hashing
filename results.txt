@@ -1,17 +1,54 @@
-=== Spatial Hashing Research Starter ===
 
-Uniform dataset:
-fixed: build 0.116 ms; query 1.099 us/query; verified 250 queries
-adaptive: build 0.097 ms; query 1.128 us/query; verified 250 queries
+Points: 1000; dataset seed: 42
+Uniform
+Trials: 3; queries: 250; query repetitions: 5; query seed: 12345; radius: 5; cell size: 10; threshold: 16; max depth: 6
+fixed: build 0.097 +/- 0.029 ms; query 1.111 +/- 0.025 us/query; candidates 36.796 +/- 0.000 per query; estimated memory 37776.000 +/- 0.000 bytes
+adaptive: build 0.089 +/- 0.006 ms; query 1.137 +/- 0.025 us/query; candidates 35.480 +/- 0.000 per query; estimated memory 47312.000 +/- 0.000 bytes
+Clustered
+Trials: 3; queries: 250; query repetitions: 5; query seed: 12345; radius: 5; cell size: 10; threshold: 16; max depth: 6
+fixed: build 0.055 +/- 0.012 ms; query 3.593 +/- 0.017 us/query; candidates 130.304 +/- 0.000 per query; estimated memory 40208.000 +/- 0.000 bytes
+adaptive: build 0.097 +/- 0.001 ms; query 2.159 +/- 0.016 us/query; candidates 76.356 +/- 0.000 per query; estimated memory 52704.000 +/- 0.000 bytes
+Skewed
+Trials: 3; queries: 250; query repetitions: 5; query seed: 12345; radius: 5; cell size: 10; threshold: 16; max depth: 6
+fixed: build 0.076 +/- 0.007 ms; query 1.209 +/- 0.021 us/query; candidates 39.256 +/- 0.000 per query; estimated memory 38496.000 +/- 0.000 bytes
+adaptive: build 0.091 +/- 0.002 ms; query 1.111 +/- 0.018 us/query; candidates 34.048 +/- 0.000 per query; estimated memory 50960.000 +/- 0.000 bytes
+Hotspot
+Trials: 3; queries: 250; query repetitions: 5; query seed: 12345; radius: 5; cell size: 10; threshold: 16; max depth: 6
+fixed: build 0.052 +/- 0.008 ms; query 11.036 +/- 0.027 us/query; candidates 468.164 +/- 0.000 per query; estimated memory 30792.000 +/- 0.000 bytes
+adaptive: build 0.119 +/- 0.007 ms; query 6.135 +/- 0.032 us/query; candidates 304.844 +/- 0.000 per query; estimated memory 58656.000 +/- 0.000 bytes
 
-Clustered dataset:
-fixed: build 0.064 ms; query 3.029 us/query; verified 250 queries
-adaptive: build 0.067 ms; query 1.445 us/query; verified 250 queries
+Points: 10000; dataset seed: 42
+Uniform
+Trials: 3; queries: 250; query repetitions: 5; query seed: 12345; radius: 5; cell size: 10; threshold: 16; max depth: 6
+fixed: build 0.615 +/- 0.136 ms; query 9.048 +/- 0.017 us/query; candidates 361.376 +/- 0.000 per query; estimated memory 312288.000 +/- 0.000 bytes
+adaptive: build 1.293 +/- 0.151 ms; query 4.334 +/- 0.023 us/query; candidates 147.872 +/- 0.000 per query; estimated memory 551224.000 +/- 0.000 bytes
+Clustered
+Trials: 3; queries: 250; query repetitions: 5; query seed: 12345; radius: 5; cell size: 10; threshold: 16; max depth: 6
+fixed: build 0.444 +/- 0.107 ms; query 32.997 +/- 0.050 us/query; candidates 1319.964 +/- 0.000 per query; estimated memory 335760.000 +/- 0.000 bytes
+adaptive: build 1.305 +/- 0.093 ms; query 11.944 +/- 0.042 us/query; candidates 566.108 +/- 0.000 per query; estimated memory 527888.000 +/- 0.000 bytes
+Skewed
+Trials: 3; queries: 250; query repetitions: 5; query seed: 12345; radius: 5; cell size: 10; threshold: 16; max depth: 6
+fixed: build 0.602 +/- 0.104 ms; query 9.842 +/- 0.042 us/query; candidates 391.864 +/- 0.000 per query; estimated memory 367584.000 +/- 0.000 bytes
+adaptive: build 1.140 +/- 0.018 ms; query 4.643 +/- 0.007 us/query; candidates 168.684 +/- 0.000 per query; estimated memory 507824.000 +/- 0.000 bytes
+Hotspot
+Trials: 3; queries: 250; query repetitions: 5; query seed: 12345; radius: 5; cell size: 10; threshold: 16; max depth: 6
+fixed: build 0.467 +/- 0.088 ms; query 100.890 +/- 0.208 us/query; candidates 4679.932 +/- 0.000 per query; estimated memory 430080.000 +/- 0.000 bytes
+adaptive: build 1.339 +/- 0.165 ms; query 46.236 +/- 0.154 us/query; candidates 2744.700 +/- 0.000 per query; estimated memory 494360.000 +/- 0.000 bytes
 
-Skewed dataset:
-fixed: build 0.046 ms; query 0.785 us/query; verified 250 queries
-adaptive: build 0.058 ms; query 0.737 us/query; verified 250 queries
-
-Hotspot dataset:
-fixed: build 0.035 ms; query 7.198 us/query; verified 250 queries
-adaptive: build 0.069 ms; query 4.013 us/query; verified 250 queries
+Points: 100000; dataset seed: 42
+Uniform
+Trials: 3; queries: 250; query repetitions: 5; query seed: 12345; radius: 5; cell size: 10; threshold: 16; max depth: 6
+fixed: build 5.776 +/- 0.950 ms; query 84.131 +/- 0.160 us/query; candidates 3622.000 +/- 0.000 per query; estimated memory 3003360.000 +/- 0.000 bytes
+adaptive: build 19.131 +/- 1.192 ms; query 39.628 +/- 0.423 us/query; candidates 1142.060 +/- 0.000 per query; estimated memory 5050328.000 +/- 0.000 bytes
+Clustered
+Trials: 3; queries: 250; query repetitions: 5; query seed: 12345; radius: 5; cell size: 10; threshold: 16; max depth: 6
+fixed: build 4.042 +/- 0.658 ms; query 333.617 +/- 31.901 us/query; candidates 13220.908 +/- 0.000 per query; estimated memory 2675240.000 +/- 0.000 bytes
+adaptive: build 21.676 +/- 5.488 ms; query 228.129 +/- 13.423 us/query; candidates 5105.836 +/- 0.000 per query; estimated memory 5144488.000 +/- 0.000 bytes
+Skewed
+Trials: 3; queries: 250; query repetitions: 5; query seed: 12345; radius: 5; cell size: 10; threshold: 16; max depth: 6
+fixed: build 5.034 +/- 0.084 ms; query 91.515 +/- 0.094 us/query; candidates 3913.408 +/- 0.000 per query; estimated memory 3470304.000 +/- 0.000 bytes
+adaptive: build 15.893 +/- 0.015 ms; query 33.992 +/- 0.026 us/query; candidates 1248.304 +/- 0.000 per query; estimated memory 5068000.000 +/- 0.000 bytes
+Hotspot
+Trials: 3; queries: 250; query repetitions: 5; query seed: 12345; radius: 5; cell size: 10; threshold: 16; max depth: 6
+fixed: build 3.175 +/- 1.143 ms; query 746.402 +/- 114.110 us/query; candidates 46808.980 +/- 0.000 per query; estimated memory 3445728.000 +/- 0.000 bytes
+adaptive: build 9.134 +/- 0.214 ms; query 463.525 +/- 1.611 us/query; candidates 26660.776 +/- 0.000 per query; estimated memory 4177624.000 +/- 0.000 bytes

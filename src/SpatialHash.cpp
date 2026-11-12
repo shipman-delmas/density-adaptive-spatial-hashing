@@ -89,7 +89,20 @@ void SpatialHash::insert(const SpatialPoint& point) {
 }
 
 //this method uses our grid to identify nearby cells, examines the points in those cells, and returns only those within the requested distance
-std::vector<SpatialPoint> SpatialHash::radiusQuery(double x, double y, double radius) const {
+std::vector<SpatialPoint> SpatialHash::radiusQuery(double x, double y, double radius) const
+{
+    return radiusQuery(x, y, radius, nullptr);
+}
+
+// Return nearby points and count every record subjected to a distance test.
+std::vector<SpatialPoint> SpatialHash::radiusQuery(
+    double x, double y, double radius, std::size_t* candidatesExamined) const
+{
+    if (candidatesExamined)
+    {
+        *candidatesExamined = 0;
+    }
+
     if (!std::isfinite(radius) || radius < 0.0) {
         //making sure the radius is a valid, finite number and isn't negative.
         throw std::invalid_argument("Radius must be finite and nonnegative");
@@ -115,6 +128,12 @@ std::vector<SpatialPoint> SpatialHash::radiusQuery(double x, double y, double ra
             //so we move to the next cell
             if (it == grid_.end()) continue;
 
+            if (candidatesExamined)
+            {
+                *candidatesExamined += it->second.size();
+            }
+
+
             //it->second refers to the vector containing all points stored in that cell
             //so we are looking at each point in that cell one at a time
             for (const SpatialPoint& point : it->second) {
@@ -131,4 +150,18 @@ std::vector<SpatialPoint> SpatialHash::radiusQuery(double x, double y, double ra
 
     //Finally, return the matches vector containing all points within the requested radius.
     return matches;
+}
+
+// Estimate structure storage, excluding allocator metadata and query temporaries.
+std::size_t SpatialHash::estimatedMemoryBytes() const noexcept
+{
+    std::size_t bytes = sizeof(*this) + grid_.bucket_count() * sizeof(void*);
+    bytes += grid_.size() * (sizeof(decltype(grid_)::value_type) + sizeof(void*));
+
+    for (const auto& entry : grid_)
+    {
+        bytes += entry.second.capacity() * sizeof(SpatialPoint);
+    }
+
+    return bytes;
 }

@@ -45,6 +45,13 @@ public:
     //Return all stored points within the requested radius of (x, y)
     std::vector<SpatialPoint> radiusQuery(double x, double y, double radius) const;
 
+    // Return nearby points and count candidate records when requested.
+    std::vector<SpatialPoint> radiusQuery(
+        double x, double y, double radius, std::size_t* candidatesExamined) const;
+
+    // Estimate storage using the same accounting as the adaptive index.
+    std::size_t estimatedMemoryBytes() const noexcept;
+
     //Return the total number of points stored in our grid
     std::size_t size() const noexcept { return pointCount_; }
 

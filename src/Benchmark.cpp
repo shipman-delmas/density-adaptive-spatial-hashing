@@ -19,11 +19,33 @@ namespace
 {
     using Clock = std::chrono::steady_clock;
 
+    constexpr std::size_t trialCount = 3;
+    constexpr std::size_t queryCount = 250;
+    constexpr std::size_t queryRepetitions = 5;
+    constexpr double queryRadius = 5.0;
+    constexpr double cellSize = 10.0;
+    constexpr std::size_t densityThreshold = 16;
+    constexpr int maxDepth = 6;
+
     struct Query
     {
         double x;
         double y;
         double radius;
+    };
+
+    struct TrialResult
+    {
+        double buildMs;
+        double queryUs;
+        double candidatesPerQuery;
+        double estimatedMemoryBytes;
+    };
+
+    struct Statistics
+    {
+        double mean;
+        double stddev;
     };
 
     // Sort point records by ID and coordinates for consistent comparisons.
@@ -45,12 +67,9 @@ namespace
             });
     }
 
-    // Generate repeatable queries across the domain and at data points.
+    // Generate the same repeatable query workload for both algorithms.
     std::vector<Query> makeQueries(const std::vector<SpatialPoint>& points)
     {
-        constexpr std::size_t queryCount = 250;
-        constexpr double queryRadius = 5.0;
-
         std::mt19937 random(12345);
         std::uniform_real_distribution<double> location(0.0, 100.0);
         std::vector<Query> queries;
@@ -72,7 +91,7 @@ namespace
         return queries;
     }
 
-    // Find expected results directly without using either spatial index.
+    // Find reference answers by checking every point directly.
     std::vector<std::vector<SpatialPoint>> expectedResults(
         const std::vector<SpatialPoint>& points, const std::vector<Query>& queries)
     {
@@ -98,9 +117,9 @@ namespace
         return expected;
     }
 
-    // Build an index, verify its answers, and measure query performance.
+    // Build a fresh index, verify its answers, and collect one trial's measurements.
     template <typename Index, typename... ConstructorArgs>
-    void benchmarkIndex(
+    TrialResult benchmarkIndex(
         const char* name,
         const std::vector<SpatialPoint>& points,
         const std::vector<Query>& queries,
@@ -122,13 +141,16 @@ namespace
             throw std::runtime_error(std::string(name) + " did not retain all points");
         }
 
-        // Check full records, including duplicates, outside the timed section.
         std::size_t expectedMatchCount = 0;
+        std::size_t totalCandidates = 0;
 
+        // Verification and candidate counting are outside the performance timers.
+        // This pass also warms the same query workload for both algorithms.
         for (std::size_t i = 0; i < queries.size(); ++i)
         {
-            std::vector<SpatialPoint> actual =
-                index.radiusQuery(queries[i].x, queries[i].y, queries[i].radius);
+            std::size_t candidates = 0;
+            std::vector<SpatialPoint> actual = index.radiusQuery(
+                queries[i].x, queries[i].y, queries[i].radius, &candidates);
             sortPoints(actual);
 
             if (!equalPoints(actual, expected[i]))
@@ -137,15 +159,14 @@ namespace
                     " returned incorrect records for query " + std::to_string(i));
             }
 
+            totalCandidates += candidates;
             expectedMatchCount += expected[i].size();
         }
 
-        // Repeat the same queries to reduce timing noise.
-        constexpr std::size_t repetitions = 5;
         std::size_t totalMatches = 0;
         const auto queryStart = Clock::now();
 
-        for (std::size_t iteration = 0; iteration < repetitions; ++iteration)
+        for (std::size_t iteration = 0; iteration < queryRepetitions; ++iteration)
         {
             for (const Query& query : queries)
             {
@@ -155,31 +176,74 @@ namespace
 
         const auto queryEnd = Clock::now();
 
-        if (totalMatches != expectedMatchCount * repetitions)
+        if (totalMatches != expectedMatchCount * queryRepetitions)
         {
             throw std::runtime_error(std::string(name) + " produced inconsistent timed results");
         }
 
-        const double buildMs =
-            std::chrono::duration<double, std::milli>(buildEnd - buildStart).count();
-        const double queryUs =
+        return {
+            std::chrono::duration<double, std::milli>(buildEnd - buildStart).count(),
             std::chrono::duration<double, std::micro>(queryEnd - queryStart).count() /
-            static_cast<double>(queries.size() * repetitions);
+                static_cast<double>(queries.size() * queryRepetitions),
+            static_cast<double>(totalCandidates) / static_cast<double>(queries.size()),
+            static_cast<double>(index.estimatedMemoryBytes())
+        };
+    }
 
+    // Calculate the mean and sample standard deviation across rebuilt trials.
+    Statistics statistics(const std::vector<double>& values)
+    {
+        double mean = 0.0;
+        double sumSquaredDifferences = 0.0;
+        std::size_t count = 0;
+
+        for (const double value : values)
+        {
+            ++count;
+            const double difference = value - mean;
+            mean += difference / static_cast<double>(count);
+            sumSquaredDifferences += difference * (value - mean);
+        }
+
+        const double stddev = count > 1
+            ? std::sqrt(std::max(0.0, sumSquaredDifferences / static_cast<double>(count - 1)))
+            : 0.0;
+
+        return {mean, stddev};
+    }
+
+    // Print the four required measurements as mean and sample standard deviation.
+    void printResults(const char* name, const std::vector<TrialResult>& trials)
+    {
+        std::vector<double> build, query, candidates, memory;
+
+        for (const TrialResult& trial : trials)
+        {
+            build.push_back(trial.buildMs);
+            query.push_back(trial.queryUs);
+            candidates.push_back(trial.candidatesPerQuery);
+            memory.push_back(trial.estimatedMemoryBytes);
+        }
+
+        const Statistics buildStats = statistics(build);
+        const Statistics queryStats = statistics(query);
+        const Statistics candidateStats = statistics(candidates);
+        const Statistics memoryStats = statistics(memory);
         const auto oldFlags = std::cout.flags();
         const auto oldPrecision = std::cout.precision();
 
         std::cout << std::fixed << std::setprecision(3)
-                  << name << ": build " << buildMs << " ms; query "
-                  << queryUs << " us/query; verified " << queries.size()
-                  << " queries\n";
+                  << name << ": build " << buildStats.mean << " +/- " << buildStats.stddev << " ms; "
+                  << "query " << queryStats.mean << " +/- " << queryStats.stddev << " us/query; "
+                  << "candidates " << candidateStats.mean << " +/- " << candidateStats.stddev << " per query; "
+                  << "estimated memory " << memoryStats.mean << " +/- " << memoryStats.stddev << " bytes\n";
 
         std::cout.flags(oldFlags);
         std::cout.precision(oldPrecision);
     }
 }
 
-// Run both spatial hashing approaches on the same verified query workload.
+// Compare both algorithms over repeated builds of the same dataset and queries.
 void Benchmark::run(const std::vector<SpatialPoint>& points)
 {
     for (const SpatialPoint& point : points)
@@ -192,12 +256,36 @@ void Benchmark::run(const std::vector<SpatialPoint>& points)
 
     const auto queries = makeQueries(points);
     const auto expected = expectedResults(points, queries);
+    std::vector<TrialResult> fixedTrials, adaptiveTrials;
+    fixedTrials.reserve(trialCount);
+    adaptiveTrials.reserve(trialCount);
 
-    constexpr double cellSize = 10.0;
-    constexpr std::size_t densityThreshold = 16;
-    constexpr int maxDepth = 6;
+    // Each trial rebuilds each index. Alternate execution order to reduce bias.
+    for (std::size_t trial = 0; trial < trialCount; ++trial)
+    {
+        if (trial % 2 == 0)
+        {
+            fixedTrials.push_back(benchmarkIndex<SpatialHash>(
+                "fixed", points, queries, expected, cellSize));
+            adaptiveTrials.push_back(benchmarkIndex<AdaptiveSpatialHash>(
+                "adaptive", points, queries, expected, cellSize, densityThreshold, maxDepth));
+        }
+        else
+        {
+            adaptiveTrials.push_back(benchmarkIndex<AdaptiveSpatialHash>(
+                "adaptive", points, queries, expected, cellSize, densityThreshold, maxDepth));
+            fixedTrials.push_back(benchmarkIndex<SpatialHash>(
+                "fixed", points, queries, expected, cellSize));
+        }
+    }
 
-    benchmarkIndex<SpatialHash>("fixed", points, queries, expected, cellSize);
-    benchmarkIndex<AdaptiveSpatialHash>(
-        "adaptive", points, queries, expected, cellSize, densityThreshold, maxDepth);
+    // Memory is a structure estimate, excluding allocator and query temporaries.
+    // Standard deviations describe trial averages, not individual query latencies.
+    std::cout << "Trials: " << trialCount << "; queries: " << queryCount
+              << "; query repetitions: " << queryRepetitions << "; query seed: 12345"
+              << "; radius: " << queryRadius << "; cell size: " << cellSize
+              << "; threshold: " << densityThreshold << "; max depth: " << maxDepth << '\n';
+
+    printResults("fixed", fixedTrials);
+    printResults("adaptive", adaptiveTrials);
 }

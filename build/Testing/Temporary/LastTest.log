@@ -1,0 +1,20 @@
+Start testing: Nov 12 11:54 EST
+----------------------------------------------------------
+1/1 Testing: scaffold_tests
+1/1 Test: scaffold_tests
+Command: "/home/delmas/density-adaptive-spatial-hashing/build/spatial_tests"
+Directory: /home/delmas/density-adaptive-spatial-hashing/build
+"scaffold_tests" start time: Nov 12 11:54 EST
+Output:
+----------------------------------------------------------
+DatasetGenerator tests passed.
+Scaffold tests passed; hashing behavior is NOT tested yet.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"scaffold_tests" end time: Nov 12 11:54 EST
+"scaffold_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Nov 12 11:54 EST

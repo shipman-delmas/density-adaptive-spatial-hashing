@@ -1,0 +1,2 @@
+/usr/sbin/ar qc libspatial_core.a CMakeFiles/spatial_core.dir/src/SpatialHash.cpp.o CMakeFiles/spatial_core.dir/src/AdaptiveSpatialHash.cpp.o CMakeFiles/spatial_core.dir/src/DatasetGenerator.cpp.o CMakeFiles/spatial_core.dir/src/Benchmark.cpp.o
+/usr/sbin/ranlib libspatial_core.a

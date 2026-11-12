@@ -1,0 +1,1 @@
+/usr/sbin/c++ -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/spatial_tests.dir/link.d CMakeFiles/spatial_tests.dir/tests/test_main.cpp.o -o spatial_tests  libspatial_core.a

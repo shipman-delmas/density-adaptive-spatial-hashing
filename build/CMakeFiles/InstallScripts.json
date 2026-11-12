@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/delmas/density-adaptive-spatial-hashing/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

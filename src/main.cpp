@@ -1,18 +1,40 @@
 #include "Benchmark.h"
 #include "DatasetGenerator.h"
+
+#include <cstddef>
+#include <exception>
 #include <iostream>
 
-int main() {
-    try {
+// Generate repeatable datasets and compare the two spatial hashing approaches.
+int main()
+{
+    try
+    {
         constexpr std::size_t sampleSize = 1000;
-        auto uniformPoints = DatasetGenerator::uniform(sampleSize);
-        auto clusteredPoints = DatasetGenerator::clustered(sampleSize);
+
+        const auto uniformPoints = DatasetGenerator::uniform(sampleSize);
+        const auto clusteredPoints = DatasetGenerator::clustered(sampleSize);
+        const auto skewedPoints = DatasetGenerator::skewed(sampleSize);
+        const auto hotspotPoints = DatasetGenerator::hotspot(sampleSize);
+
         std::cout << "=== Spatial Hashing Research Starter ===\n";
-        std::cout << "Uniform dataset:\n";
+
+        std::cout << "\nUniform dataset:\n";
         Benchmark::run(uniformPoints);
-        std::cout << "Clustered dataset:\n";
+
+        std::cout << "\nClustered dataset:\n";
         Benchmark::run(clusteredPoints);
-    } catch (const std::exception& e) {
+
+        std::cout << "\nSkewed dataset:\n";
+        Benchmark::run(skewedPoints);
+
+        std::cout << "\nHotspot dataset:\n";
+        Benchmark::run(hotspotPoints);
+
+        return 0;
+    }
+    catch (const std::exception& e)
+    {
         std::cerr << "Error: " << e.what() << '\n';
         return 1;
     }
